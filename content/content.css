@@ -1,0 +1,160 @@
+/**
+ * X Article Exporter - Content Styles
+ */
+
+/* Export Button */
+.x-article-export-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+.x-article-export-btn .export-main-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: #1d9bf0;
+  color: white;
+  border: none;
+  border-radius: 9999px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(29, 155, 240, 0.4);
+  transition: all 0.2s ease;
+}
+
+.x-article-export-btn .export-main-btn:hover {
+  background: #1a8cd8;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(29, 155, 240, 0.5);
+}
+
+.x-article-export-btn .export-main-btn:active {
+  transform: translateY(0);
+}
+
+/* Export Dropdown */
+.x-article-export-btn .export-dropdown {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  margin-bottom: 8px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all 0.2s ease;
+}
+
+.x-article-export-btn .export-dropdown.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.x-article-export-btn .export-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 20px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: #0f1419;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  white-space: nowrap;
+}
+
+.x-article-export-btn .export-option:hover {
+  background: #f7f9f9;
+}
+
+.x-article-export-btn .export-option svg {
+  color: #536471;
+}
+
+.x-article-export-btn .export-divider {
+  height: 1px;
+  background: #eff3f4;
+  margin: 4px 0;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .x-article-export-btn .export-dropdown {
+    background: #16181c;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  }
+
+  .x-article-export-btn .export-option {
+    color: #e7e9ea;
+  }
+
+  .x-article-export-btn .export-option:hover {
+    background: #1d1f23;
+  }
+
+  .x-article-export-btn .export-option svg {
+    color: #71767b;
+  }
+
+  .x-article-export-btn .export-divider {
+    background: #2f3336;
+  }
+}
+
+/* Notification Toast */
+.x-export-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 14px 24px;
+  border-radius: 8px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 10000;
+  animation: slideIn 0.3s ease;
+}
+
+.x-export-notification.info {
+  background: #1d9bf0;
+  color: white;
+}
+
+.x-export-notification.success {
+  background: #00ba7c;
+  color: white;
+}
+
+.x-export-notification.error {
+  background: #f4212e;
+  color: white;
+}
+
+.x-export-notification.fade-out {
+  opacity: 0;
+  transform: translateX(20px);
+  transition: all 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
