@@ -314,12 +314,6 @@ const XArticleExtractor = {
     if (className.includes('header-three')) return 'h3';
     if (className.includes('blockquote')) return 'blockquote';
 
-    const textLength = (block && block.innerText ? block.innerText.trim().length : 0);
-    if (textLength > 0 && textLength < 80 && !/[.!?。！？]$/.test(block.innerText.trim())) {
-      // Heuristic fallback: short standalone lines are often section headings.
-      return 'h3';
-    }
-
     return 'p';
   },
 
