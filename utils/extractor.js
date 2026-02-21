@@ -277,10 +277,12 @@ const XArticleExtractor = {
       blocks.forEach((block, index) => {
         const text = block.innerText.trim();
         if (text) {
+          const blockTag = this.getDraftBlockTag(block);
+          const blockHtml = `<${blockTag} class="article-block">${block.innerHTML}</${blockTag}>`;
           parts.push({
             index,
             text: text,
-            html: block.innerHTML
+            html: blockHtml
           });
         }
       });
@@ -295,9 +297,29 @@ const XArticleExtractor = {
     }
 
     content.text = parts.map(p => p.text).join('\n\n');
-    content.html = parts.map(p => `<div class="article-block">${p.html}</div>`).join('\n');
+    content.html = parts.map(p => p.html).join('\n');
 
     return content;
+  },
+
+  /**
+   * Detect Draft.js block tag to preserve heading hierarchy in exports
+   */
+  getDraftBlockTag(block) {
+    const className = ((block && block.className) || '').toLowerCase();
+
+    if (className.includes('header-one')) return 'h1';
+    if (className.includes('header-two')) return 'h2';
+    if (className.includes('header-three')) return 'h3';
+    if (className.includes('blockquote')) return 'blockquote';
+
+    const textLength = (block && block.innerText ? block.innerText.trim().length : 0);
+    if (textLength > 0 && textLength < 80 && !/[.!?。！？]$/.test(block.innerText.trim())) {
+      // Heuristic fallback: short standalone lines are often section headings.
+      return 'h3';
+    }
+
+    return 'p';
   },
 
   /**

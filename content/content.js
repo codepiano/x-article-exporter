@@ -304,7 +304,7 @@
     md += '**Date:** ' + new Date(article.date).toLocaleDateString() + '  \n';
     md += '**URL:** ' + article.url + '\n\n';
     md += '---\n\n';
-    md += article.content.text + '\n\n';
+    md += htmlToMarkdown(article.content.html || article.content.text || '') + '\n\n';
 
     // Images
     if (article.images && article.images.length > 0) {
@@ -324,6 +324,47 @@
     }
 
     return md;
+  }
+
+  /**
+   * Convert extracted HTML to Markdown while preserving heading hierarchy.
+   */
+  function htmlToMarkdown(content) {
+    if (!content) return '';
+
+    const source = String(content);
+    if (!/<[a-z][\s\S]*>/i.test(source)) {
+      return source.trim();
+    }
+
+    return source
+      .replace(/<h1[^>]*>([\s\S]*?)<\/h1>/gi, '\n# $1\n\n')
+      .replace(/<h2[^>]*>([\s\S]*?)<\/h2>/gi, '\n## $1\n\n')
+      .replace(/<h3[^>]*>([\s\S]*?)<\/h3>/gi, '\n### $1\n\n')
+      .replace(/<h4[^>]*>([\s\S]*?)<\/h4>/gi, '\n#### $1\n\n')
+      .replace(/<h5[^>]*>([\s\S]*?)<\/h5>/gi, '\n##### $1\n\n')
+      .replace(/<h6[^>]*>([\s\S]*?)<\/h6>/gi, '\n###### $1\n\n')
+      .replace(/<blockquote[^>]*>([\s\S]*?)<\/blockquote>/gi, '\n> $1\n\n')
+      .replace(/<pre[^>]*>([\s\S]*?)<\/pre>/gi, '\n```\n$1\n```\n\n')
+      .replace(/<code[^>]*>([\s\S]*?)<\/code>/gi, '`$1`')
+      .replace(/<strong[^>]*>([\s\S]*?)<\/strong>/gi, '**$1**')
+      .replace(/<b[^>]*>([\s\S]*?)<\/b>/gi, '**$1**')
+      .replace(/<em[^>]*>([\s\S]*?)<\/em>/gi, '*$1*')
+      .replace(/<i[^>]*>([\s\S]*?)<\/i>/gi, '*$1*')
+      .replace(/<a[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi, '[$2]($1)')
+      .replace(/<p[^>]*>([\s\S]*?)<\/p>/gi, '$1\n\n')
+      .replace(/<div[^>]*>([\s\S]*?)<\/div>/gi, '$1\n\n')
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<hr\s*\/?>/gi, '\n---\n\n')
+      .replace(/<[^>]+>/g, '')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
   }
 
   /**
