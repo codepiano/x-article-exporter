@@ -280,8 +280,12 @@ function generatePDFHTML(article, settings) {
   html += '<div class="article-url">' + article.url + '</div>\n';
   html += '</div>\n';
 
+  const contentHtml = settings.includeImages === false
+    ? (article.content.html || '').replace(/<img[^>]*>/gi, '')
+    : article.content.html;
+
   html += '<div class="content">\n';
-  html += article.content.html || escapeHtml(article.content.text);
+  html += contentHtml || escapeHtml(article.content.text);
   html += '\n</div>\n';
 
   if (settings.includeMetrics && article.metrics) {

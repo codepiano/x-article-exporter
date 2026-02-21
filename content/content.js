@@ -201,7 +201,10 @@
         throw new Error('Extractor not loaded');
       }
 
-      const article = XArticleExtractor.extractArticle();
+      const settings = await getSettings();
+      const article = XArticleExtractor.extractArticle({
+        includeImages: settings.includeImages
+      });
       console.log('[X-Export] Extracted:', article.title, '- Content length:', article.content.text.length);
 
       if (!article.content.text && !article.content.html) {
@@ -211,7 +214,7 @@
 
       // Handle copy to clipboard locally
       if (format === 'copy') {
-        await copyToClipboard(article);
+        await copyToClipboard(article, settings);
         return;
       }
 
@@ -250,9 +253,9 @@
   /**
    * Copy article as markdown to clipboard
    */
-  async function copyToClipboard(article) {
+  async function copyToClipboard(article, settings = {}) {
     try {
-      const markdown = generateMarkdown(article);
+      const markdown = generateMarkdown(article, settings);
 
       // Try modern clipboard API first
       if (navigator.clipboard && document.hasFocus()) {
@@ -279,7 +282,8 @@
   /**
    * Generate markdown from article
    */
-  function generateMarkdown(article) {
+  function generateMarkdown(article, settings = {}) {
+    const includeImages = settings.includeImages !== false;
     let md = '';
 
     // Frontmatter
@@ -307,7 +311,7 @@
     md += htmlToMarkdown(article.content.html || article.content.text || '') + '\n\n';
 
     // Images
-    if (article.images && article.images.length > 0) {
+    if (includeImages && article.images && article.images.length > 0) {
       md += '## Images\n\n';
       article.images.forEach((img, i) => {
         md += '![' + (img.alt || 'Image ' + (i + 1)) + '](' + img.src + ')\n\n';
@@ -499,7 +503,7 @@
             sendResponse({ success: false, error: 'Extractor not loaded' });
             break;
           }
-          const article = XArticleExtractor.extractArticle();
+          const article = XArticleExtractor.extractArticle(message.options || {});
           sendResponse({ success: true, article: article });
         } catch (error) {
           sendResponse({ success: false, error: error.message });
@@ -508,7 +512,7 @@
 
       case 'exportDirect':
         // Handle PDF and copy directly in content script
-        handleExportDirect(message.format)
+        handleExportDirect(message.format, message.options || {})
           .then(result => sendResponse(result))
           .catch(error => sendResponse({ success: false, error: error.message }));
         return true; // Keep channel open for async response
@@ -523,20 +527,24 @@
   /**
    * Handle direct export (PDF/copy) from popup
    */
-  async function handleExportDirect(format) {
+  async function handleExportDirect(format, options = {}) {
     try {
       if (!XArticleExtractor) {
         throw new Error('Extractor not loaded');
       }
 
-      const article = XArticleExtractor.extractArticle();
+      const settings = await getSettings();
+      const mergedOptions = Object.assign({}, settings, options);
+      const article = XArticleExtractor.extractArticle({
+        includeImages: mergedOptions.includeImages
+      });
 
       if (!article.content.text && !article.content.html) {
         throw new Error('Could not extract content');
       }
 
       if (format === 'copy') {
-        await copyToClipboard(article);
+        await copyToClipboard(article, mergedOptions);
         return { success: true };
       }
 
@@ -570,6 +578,14 @@
       notification.classList.add('fade-out');
       setTimeout(() => notification.remove(), 300);
     }, 3000);
+  }
+
+  async function getSettings() {
+    return new Promise(resolve => {
+      chrome.runtime.sendMessage({ action: 'getSettings' }, (response) => {
+        resolve(response || {});
+      });
+    });
   }
 
   // Initialize

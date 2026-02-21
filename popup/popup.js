@@ -124,7 +124,10 @@ async function exportArticle(format) {
     if (format === 'pdf' || format === 'copy') {
       const response = await chrome.tabs.sendMessage(tab.id, {
         action: 'exportDirect',
-        format: format
+        format: format,
+        options: {
+          includeImages: document.getElementById('includeImages').checked
+        }
       });
 
       if (!response || !response.success) {
@@ -136,7 +139,12 @@ async function exportArticle(format) {
     }
 
     // For markdown, extract then send to service worker
-    const response = await chrome.tabs.sendMessage(tab.id, { action: 'extractArticle' });
+    const response = await chrome.tabs.sendMessage(tab.id, {
+      action: 'extractArticle',
+      options: {
+        includeImages: document.getElementById('includeImages').checked
+      }
+    });
 
     if (!response || !response.success) {
       throw new Error(response?.error || 'Failed to extract content');

@@ -48,8 +48,9 @@ const XArticleExtractor = {
   /**
    * Extract all data from the current page
    */
-  extractArticle() {
+  extractArticle(options = {}) {
     console.log('[X-Export] Starting extraction...');
+    const includeImages = options.includeImages !== false;
 
     // Get the author handle from URL
     const authorHandle = this.getAuthorFromUrl();
@@ -60,7 +61,7 @@ const XArticleExtractor = {
       date: this.extractDate(),
       url: window.location.href,
       content: this.extractThreadContent(authorHandle),
-      images: this.extractImages(authorHandle),
+      images: includeImages ? this.extractImages(authorHandle) : [],
       metrics: this.extractMetrics()
     };
 
