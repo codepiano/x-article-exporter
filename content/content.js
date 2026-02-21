@@ -284,23 +284,26 @@
    */
   function generateMarkdown(article, settings = {}) {
     const includeImages = settings.includeImages !== false;
+    const includeFrontmatter = settings.includeFrontmatter !== false;
     let md = '';
 
     // Frontmatter
-    md += '---\n';
-    md += 'title: "' + (article.title || '').replace(/"/g, '\\"') + '"\n';
-    md += 'author: ' + article.author.name + '\n';
-    md += 'handle: ' + article.author.handle + '\n';
-    md += 'date: ' + article.date + '\n';
-    md += 'url: ' + article.url + '\n';
-    if (article.metrics) {
-      md += 'metrics:\n';
-      if (article.metrics.views) md += '  views: ' + article.metrics.views + '\n';
-      if (article.metrics.likes) md += '  likes: ' + article.metrics.likes + '\n';
-      if (article.metrics.reposts) md += '  reposts: ' + article.metrics.reposts + '\n';
-      if (article.metrics.replies) md += '  replies: ' + article.metrics.replies + '\n';
+    if (includeFrontmatter) {
+      md += '---\n';
+      md += 'title: "' + (article.title || '').replace(/"/g, '\\"') + '"\n';
+      md += 'author: ' + article.author.name + '\n';
+      md += 'handle: ' + article.author.handle + '\n';
+      md += 'date: ' + article.date + '\n';
+      md += 'url: ' + article.url + '\n';
+      if (article.metrics) {
+        md += 'metrics:\n';
+        if (article.metrics.views) md += '  views: ' + article.metrics.views + '\n';
+        if (article.metrics.likes) md += '  likes: ' + article.metrics.likes + '\n';
+        if (article.metrics.reposts) md += '  reposts: ' + article.metrics.reposts + '\n';
+        if (article.metrics.replies) md += '  replies: ' + article.metrics.replies + '\n';
+      }
+      md += '---\n\n';
     }
-    md += '---\n\n';
 
     // Content
     md += '# ' + article.title + '\n\n';
