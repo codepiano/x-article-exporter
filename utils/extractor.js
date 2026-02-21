@@ -60,7 +60,7 @@ const XArticleExtractor = {
       date: this.extractDate(),
       url: window.location.href,
       content: this.extractThreadContent(authorHandle),
-      images: this.extractImages(),
+      images: this.extractImages(authorHandle),
       metrics: this.extractMetrics()
     };
 
@@ -434,37 +434,51 @@ const XArticleExtractor = {
   /**
    * Extract all images
    */
-  extractImages() {
+  extractImages(authorHandle) {
     const images = [];
     const seen = new Set();
+    const normalizedHandle = (authorHandle || '').replace(/^@/, '').toLowerCase();
 
-    const imageSelectors = [
-      '[data-testid="tweetPhoto"] img',
-      'article img[src*="media"]',
-      'article img[src*="twimg.com/media"]',
-      '[data-testid="card.layoutLarge.media"] img'
-    ];
+    const pushImage = (img) => {
+      let src = img.src || img.currentSrc;
+      if (!src) return;
+      if (img.width < 100 && img.height < 100) return;
+      if (src.includes('profile_images')) return;
+      if (src.includes('emoji')) return;
 
-    imageSelectors.forEach(selector => {
-      document.querySelectorAll(selector).forEach(img => {
-        let src = img.src || img.currentSrc;
+      src = this.getHighQualityImageUrl(src);
+      if (!seen.has(src)) {
+        seen.add(src);
+        images.push({
+          src: src,
+          alt: img.alt || ''
+        });
+      }
+    };
 
-        if (!src) return;
-        if (img.width < 100 && img.height < 100) return;
-        if (src.includes('profile_images')) return;
-        if (src.includes('emoji')) return;
-
-        src = this.getHighQualityImageUrl(src);
-
-        if (!seen.has(src)) {
-          seen.add(src);
-          images.push({
-            src: src,
-            alt: img.alt || ''
-          });
+    // Prefer scoped extraction: only from current tweet/thread authored by page author.
+    const tweetArticles = document.querySelectorAll('article[data-testid="tweet"]');
+    tweetArticles.forEach((tweetEl) => {
+      if (normalizedHandle) {
+        const tweetAuthor = (this.getTweetAuthor(tweetEl) || '').replace(/^@/, '').toLowerCase();
+        if (tweetAuthor && tweetAuthor !== normalizedHandle) {
+          return;
         }
-      });
+      }
+
+      tweetEl.querySelectorAll('[data-testid="tweetPhoto"] img, img[src*="twimg.com/media"], [data-testid="card.layoutLarge.media"] img')
+        .forEach(pushImage);
     });
+
+    // Long-form article fallback: images inside article content container.
+    if (images.length === 0) {
+      const longformContainer = document.querySelector('.public-DraftEditor-content') ||
+                                document.querySelector('[class*="longform"]') ||
+                                document.querySelector('[data-testid="article-content"]');
+      if (longformContainer) {
+        longformContainer.querySelectorAll('img').forEach(pushImage);
+      }
+    }
 
     console.log('[X-Export] Found images:', images.length);
     return images;
