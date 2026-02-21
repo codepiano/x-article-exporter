@@ -41,9 +41,14 @@ async function saveSettings() {
  */
 async function checkPageStatus() {
   const quickExport = document.getElementById('quickExport');
+  quickExport.style.display = 'none';
 
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!tab || !tab.id || !tab.url) {
+      updateStatus('info', 'Open an X page to export');
+      return;
+    }
 
     if (!tab.url.includes('x.com') && !tab.url.includes('twitter.com')) {
       updateStatus('not-x', 'Navigate to X to export');
@@ -59,9 +64,19 @@ async function checkPageStatus() {
       updateStatus('info', 'Open a post or article to export');
     }
   } catch (error) {
-    console.error('Status check error:', error);
-    updateStatus('error', 'Refresh page and try again');
+    if (isNoReceiverError(error)) {
+      updateStatus('info', 'Refresh the X page and reopen popup');
+      return;
+    }
+    console.warn('Status check warning:', error);
+    updateStatus('error', 'Unable to check page status');
   }
+}
+
+function isNoReceiverError(error) {
+  const message = String(error && error.message ? error.message : error || '');
+  return message.includes('Receiving end does not exist') ||
+         message.includes('Could not establish connection');
 }
 
 /**
