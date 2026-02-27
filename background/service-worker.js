@@ -357,13 +357,20 @@ async function saveSettings(settings) {
 // ============================================
 
 function generateFilename(title, extension) {
-  let filename = (title || 'x_article')
-    .replace(/[<>:"/\\|?*]/g, '')
-    .replace(/\s+/g, '_')
-    .toLowerCase()
+  const ext = extension || 'txt';
+  const rawTitle = String(title || '').trim();
+  let filename = rawTitle
+    .replace(/[\x00-\x1f\x7f<>:"/\\|?*]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
     .substring(0, 80);
 
-  return 'x_articles/' + filename + '.' + extension;
+  filename = filename.replace(/[. ]+$/g, '');
+  if (!filename) {
+    filename = 'x_article_' + Date.now();
+  }
+
+  return filename + '.' + ext;
 }
 
 function escapeHtml(text) {
